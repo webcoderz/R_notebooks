@@ -1,2 +1,2 @@
 # R_notebooks
-repository of r noebooks 
+repository of r notebooks 
