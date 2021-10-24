@@ -1,0 +1,146 @@
+---
+title: " Wine Color decision tree"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rpart.plot)
+library(rpart)
+library(caret)
+library(dplyr)
+```
+
+
+## R Markdown
+
+This is a wine description dataset
+```{r data}
+df <- read.csv("https://raw.githubusercontent.com/webcoderz/datasets/main/winequalityN.csv",encoding = "UTF-8")
+head(df)
+```
+
+```{r}
+table(df$type)
+```
+
+
+Next we construct and plot the initial decision tree
+
+```{r}
+tree <- rpart(type ~.,data=df)
+
+rpart.plot(tree)
+```
+```{r}
+
+pred <- predict(tree, df, type = "class")
+head(pred)
+```
+```{r}
+head(predict(tree, df))
+```
+
+Here is the confusion matrix. The model performed pretty well with only misclassifying 78 reds as whites and 39 whites as reds.
+```{r}
+table(pred)
+table(pred,df$type)
+```
+
+Cross validation testing by chunking the data set into training and test ( 75% training / 25% testing split).
+
+```{r}
+## 75% of the sample size for training set
+smp_size <- floor(0.75 * nrow(df))
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+```
+
+Training the decision tree on training set.
+```{r}
+tree2 <- rpart(type ~. , data=train)
+```
+
+
+Plotting tree #2
+```{r}
+rpart.plot(tree2)
+```
+
+Making predictions on the test dataset.
+```{r}
+pred <- predict(tree2, test, type = "class")
+```
+
+
+Here is a table of the predictions and also a table of the actual test types as well as the confusion matrix. The Confusion matrix is important for us to analyze and determine the accuracy of our model by looking at the sum of false positives and false negatives.
+```{r}
+
+table(pred)
+
+table(test$type)
+table(pred,test$type)
+
+
+
+```
+
+Variable importance of the test indicates that total.sulfur.dioxide was a important variable, which makes sense as it was the first split in the tree.
+```{r}
+imp <- varImp(tree2)
+imp
+```
+
+Plot of variable importance.
+```{r}
+imp %>% ggplot(aes(x = row.names(imp), weight = Overall)) +
+     geom_bar()
+```
+
+
+
+Random Sampling of 100 rows
+```{r}
+set.seed(123)
+train_ind <- sample(seq_len(nrow(df)), size = 100)
+randtrain <- df[train_ind, ]
+randtest <- df[-train_ind, ]
+```
+
+Constructing the tree on the random sample
+```{r}
+tree3 <- rpart(type ~.,data=randtrain)
+
+rpart.plot(tree3)
+```
+
+
+predict with the tree on the random test sample
+```{r}
+pred <- predict(tree3, randtest, type = "class")
+```
+
+here is a table of the predictions and also a table of the actual test types as well as the confusion matrix of the 3rd tree
+```{r}
+
+table(pred)
+table(randtest$type)
+table(pred,randtest$type)
+```
+
+Variable importance of tree 3 , total.sulfur.dioxide still the most important variable .
+```{r}
+imp <- varImp(tree3)
+imp
+```
+
+Plot of variable importance.
+```{r}
+imp %>% ggplot(aes(x = row.names(imp), weight = Overall)) +
+     geom_bar()
+```
+ 
+

@@ -1,0 +1,35 @@
+---
+title: "Apriori with Wine Dataset"
+author: "cody webb"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r}
+library(RColorBrewer)
+library(arulesViz)
+library(arules)
+```
+
+
+This is a wine description dataset
+```{r data}
+df <- read.csv("https://raw.githubusercontent.com/webcoderz/datasets/main/winequalityN.csv",encoding = "UTF-8")
+df$type<-as.factor(df$type)
+head(df)
+```
+```{r defining the rules with minimum support and confidence}
+rules <- apriori(df, parameter = list(supp = 0.01, conf = 0.2))
+```
+```{r plotting}
+a1 <- as(df, "transactions")
+arules::itemFrequencyPlot(a1, topN = 20,
+                          col = brewer.pal(8, 'Pastel2'),
+                          main = 'Relative Item Frequency Plot',
+                          type = "relative",
+                          ylab = "Item Frequency (Relative)")
+
+```
+
