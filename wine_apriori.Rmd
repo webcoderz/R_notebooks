@@ -14,15 +14,37 @@ library(arules)
 ```
 
 
-This is a wine description dataset
-```{r data}
+We get our dataset here from the Github
+```{r This is a wine description dataset}
 df <- read.csv("https://raw.githubusercontent.com/webcoderz/datasets/main/winequalityN.csv",encoding = "UTF-8")
 df$type<-as.factor(df$type)
 head(df)
 ```
+
+We apply Apriori to our Dataset
 ```{r defining the rules with minimum support and confidence}
 rules <- apriori(df, parameter = list(supp = 0.01, conf = 0.2))
 ```
+ 
+Show the rules by confidence
+
+```{r}
+rules_conf <- sort (rules, by="confidence", decreasing=TRUE) # 'high-confidence' rules.
+inspect(head(rules_conf)) # show the support, lift and confidence for all rules
+```
+
+show the rules by lift
+```{r}
+rules_lift <- sort (rules, by="lift", decreasing=TRUE) # 'high-lift' rules.
+inspect(head(rules_lift)) # show the support, lift and confidence for all rules
+```
+
+plotting the rules
+```{r}
+plot(rules)
+```
+
+We convert our dataframe into transactions and plot.
 ```{r plotting}
 a1 <- as(df, "transactions")
 arules::itemFrequencyPlot(a1, topN = 20,
